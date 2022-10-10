@@ -43,4 +43,6 @@ u, s, v = rsvd(A_sample, O)
 
 res = np.dot(u, np.diag(np.sqrt(s)))
 
+res = np.array(res)
+
 print(res)
