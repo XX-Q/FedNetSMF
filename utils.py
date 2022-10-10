@@ -21,18 +21,27 @@ def svd(x):
         return v.T, s, u.T
 
 def power_iteration(A, Omega, power_iter = 3):
-    Y = A @ Omega
+    Y = np.dot(A, Omega)
     for q in range(power_iter):
-        Y = A @ (A.T @ Y)
+        Y = np.dot(A, np.dot(A.T, Y))
     Q, _ = np.linalg.qr(Y)
     return Q
 
-def rsvd(A, Omega):
-    Q = power_iteration(A, Omega)
-    B = Q.T @ A
+def rsvd(A, O):
+    """
+    rnadomized svd
+    :param A: matrix to be svd (n x n)
+    :param O: random matrix (n x m)
+    :return:
+    """
+    # Q = power_iteration(A, O)
+    Y = np.dot(A, O)
+    Q, _ = np.linalg.qr(Y)
+    B = np.dot(Q.T, A)
     u_tilde, s, v = np.linalg.svd(B, full_matrices=False)
-    u = Q @ u_tilde
+    u = np.dot(Q, u_tilde)
     return u, s, v
+
 
 def random_matrix(size):
     """
@@ -534,10 +543,10 @@ def path_sampling(A, T, m):
             start_node = current_node
         return current_node, walk_path
 
-    if not A.issparse():
-        print("Matrix A is not sparse matrix")
-    elif not A.isspmatrix_dok():
-        A = A.todok()
+    # if not A.issparse():
+    #     print("Matrix A is not sparse matrix")
+    # elif not A.isspmatrix_dok():
+    #     A = A.todok()
 
     A_sparse = dok_matrix(A.shape)
 
