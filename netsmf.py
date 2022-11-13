@@ -27,10 +27,17 @@ A_sparse = sparse.dok_matrix(A)
 A = A_sparse.todense()
 D = np.array(sum(A), dtype=float)
 
+
+# path sampling
 A_sample_sprase = path_sampling(A_sparse, T, m)
+
 A_sample = A_sample_sprase.todense()
 
-A_sample = A
+# np.save("test_A_100_sampled.npy", A_sample)
+
+A_sample = np.load("test_A_100_sampled.npy")
+
+# A_sample = A
 
 D_sample = np.array(sum(A_sample), dtype=float)
 

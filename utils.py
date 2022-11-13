@@ -34,9 +34,9 @@ def rsvd(A, O):
     :param O: random matrix (n x m)
     :return:
     """
-    # Q = power_iteration(A, O)
-    Y = np.dot(A, O)
-    Q, _ = np.linalg.qr(Y)
+    Q = power_iteration(A, O)
+    # Y = np.dot(A, O)
+    # Q, _ = np.linalg.qr(Y)
     B = np.dot(Q.T, A)
     u_tilde, s, v = np.linalg.svd(B, full_matrices=False)
     u = np.dot(Q, u_tilde)
