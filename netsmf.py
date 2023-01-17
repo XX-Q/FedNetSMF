@@ -28,7 +28,7 @@ D = np.array(sum(A), dtype=float)
 
 m = 0 # total edges of original network
 
-# m_ = 10^  # non-zeros of path sampled network
+m_ = 10  # non-zeros of path sampled network
 
 
 # path sampling
