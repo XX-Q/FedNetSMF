@@ -16,9 +16,8 @@ logger = logging.getLogger(__name__)
 theano.config.exception_verbosity = 'high'
 
 # Get parameters
-T = 4  # window size of random walk
-m = 100  # non-zeros of path sampling algorithm
-d = 50  # dimension of random svd
+T = 40  # window size of random walk
+d = 128  # dimension of random svd
 
 A = np.load("test_A_100.npy")
 
@@ -27,15 +26,19 @@ A_sparse = sparse.dok_matrix(A)
 A = A_sparse.todense()
 D = np.array(sum(A), dtype=float)
 
+m = 0 # total edges of original network
+
+# m_ = 10^  # non-zeros of path sampled network
+
 
 # path sampling
-A_sample_sprase = path_sampling(A_sparse, T, m)
+A_sample_sprase = path_sampling(A_sparse, T, m, m_)
 
 A_sample = A_sample_sprase.todense()
 
 # np.save("test_A_100_sampled.npy", A_sample)
 
-A_sample = np.load("test_A_100_sampled.npy")
+# A_sample = np.load("test_A_100_sampled.npy")
 
 # A_sample = A
 

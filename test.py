@@ -2,19 +2,19 @@ import numpy as np
 
 from utils import *
 
-# def power_iteration(A, Omega, power_iter = 3):
-#     Y = A @ Omega
-#     for q in range(power_iter):
-#         Y = A @ (A.T @ Y)
-#     Q, _ = np.linalg.qr(Y)
-#     return Q
-#
-# def rsvd(A, Omega):
-#     Q = power_iteration(A, Omega)
-#     B = Q.T @ A
-#     u_tilde, s, v = np.linalg.svd(B, full_matrices = 0)
-#     u = Q @ u_tilde
-#     return u, s, v
+def power_iteration(A, Omega, power_iter = 3):
+    Y = A @ Omega
+    for q in range(power_iter):
+        Y = A @ (A.T @ Y)
+    Q, _ = np.linalg.qr(Y)
+    return Q
+
+def rsvd(A, Omega):
+    Q = power_iteration(A, Omega)
+    B = Q.T @ A
+    u_tilde, s, v = np.linalg.svd(B, full_matrices = 0)
+    u = Q @ u_tilde
+    return u, s, v
 
 
 import numpy as np

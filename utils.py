@@ -178,6 +178,7 @@ def find_block_size(size):
 def block_matrix_splitter(matrix, name, block_size, diag=False):
     if not diag:
         size_row, size_col = matrix.shape[0], matrix.shape[1]
+
         res_size_row, res_size_col = int(size_row / block_size), int(size_col / block_size)
         res = []
         for i in range(0, res_size_row):
@@ -189,8 +190,11 @@ def block_matrix_splitter(matrix, name, block_size, diag=False):
                 # np.save(matrix_name, matrix[i*block_size:(i+1)* block_size, j*block_size:(j+1)* block_size])
                 res[i].append(matrix_name)
     else:
+        matrix = np.array(matrix)
+        matrix = matrix.reshape((-1))
         size = len(matrix)
         res_size = int(size / block_size)
+
         res = []
         for i in range(0, res_size):
             matrix_name = "matrices/" + name + "_" + str(i) + '_' + str(i) + '_' + str(block_size) + ".npz"
@@ -348,37 +352,41 @@ def generate_block_random_martic(size, block_size, name):
     return res
 
 
-def diag_block_dot(m, diag_martix, name, dot_side="left", inverse=False):
+def diag_block_dot(m, diag_martix, name, dot_side="left", inverse=False, block_size=0):
     res = []
     for i in range(len(m)):
         res.append([])
-        for j in range(len(m)):
+        for j in range(len(m[0])):
             res[i].append("")
-    for i in range(len(m)):
+    tmplen = len(m)
+    # if dot_side == "right":
+    #     tmplen = len(m[0])
+    for i in range(tmplen):
         # rm = np.load(diag_martix[i])
-        rm = scipy.sparse.load_npz(diag_martix[i]).todense()
-        if inverse:
-            rm = np.diag(np.diag(rm)**-1)
-        block_size = len(rm)
-        for j in range(len(m)):
+
+        for j in range(len(m[0])):
+            rm = scipy.sparse.load_npz(diag_martix[j]).todense()
+            if inverse:
+                rm = np.diag(np.diag(rm) ** -1)
+            # block_size = len(rm)
             if dot_side== "left":
                 # matrix = np.load(m[i][j])
-                matrix = scipy.sparse.load_npz(m[i][j]).todense()
+                matrix = scipy.sparse.load_npz(m[j][i]).todense()
                 dot_res = np.dot(rm, matrix)
-                matrix_name = "matrices/" + name + "_" + str(i) + '_' + str(j) + '_' + str(
+                matrix_name = "matrices/" + name + "_" + str(j) + '_' + str(i) + '_' + str(
                     block_size) + ".npz"
                 # np.save(matrix_name, dot_res)
                 scipy.sparse.save_npz(matrix_name, scipy.sparse.csc_matrix(dot_res))
-                res[i][j] = matrix_name
+                res[j][i] = matrix_name
             else:
                 # matrix = np.load(m[j][i])
-                matrix = scipy.sparse.load_npz(m[j][i]).todense()
+                matrix = scipy.sparse.load_npz(m[i][j]).todense()
                 dot_res = np.dot(matrix, rm)
-                matrix_name = "matrices/" + name + "_" + str(j) + '_' + str(i) + '_' + str(
+                matrix_name = "matrices/" + name + "_" + str(i) + '_' + str(j) + '_' + str(
                 block_size) + ".npz"
                 scipy.sparse.save_npz(matrix_name, scipy.sparse.csc_matrix(dot_res))
                 # np.save(matrix_name, dot_res)
-                res[j][i]= matrix_name
+                res[i][j]= matrix_name
     return res
 
 def diag_diag_block_dot(m, diag_martix, name, dot_side="left", inverse=False):
@@ -421,10 +429,11 @@ def block_constant_multiply(C, m, name):
 
 def block_add(A, B, block_size, name):
     a = len(A)
+    b = len(A[0])
     Final = []
     for i in range(0, a):
         Final.append([])
-        for j in range(0, a):
+        for j in range(0, b):
             # b1 = np.load(A[i][j])
             b1 = scipy.sparse.load_npz(A[i][j]).todense()
             # b2 = np.load(B[i][j])
@@ -487,15 +496,18 @@ def diag_diag_block_add(dm1, dm2, name, negative="++"):
     return res
 
 def show_block_matrix(matrix, block_size):
+    # TODO 这里有时间改一下，默认矩阵都是方阵了
     if len(np.array(matrix).shape)==2:
         m = len(matrix)
         n = len(matrix[0])
-        res = np.zeros(shape=(m*block_size,m*block_size))
+        res = np.zeros(shape=(max(m,n)*block_size,max(m,n)*block_size))
         for i in range(m):
             for j in range(n):
                 # res[i*block_size:(i+1)*block_size,j*block_size:(j+1)*block_size]=np.load(matrix[i][j])
                 res[i*block_size:(i+1)*block_size,j*block_size:(j+1)*block_size]=scipy.sparse.load_npz(matrix[i][j]).todense()
                 # res[m][n] = np.load(matrix[m][n])
+        if m!=n:
+            res = res[:m*block_size,:n*block_size]
         return res
     else:
         m = len(matrix)
@@ -514,7 +526,7 @@ def output_PDAAQs(P, Ts, U, DQ):
 
 
 
-def path_sampling(A, T, m):
+def path_sampling(A, T, m, m_):
     """
     display path sampling algorithm
     :param A: sparse matrix of the graph
@@ -558,8 +570,9 @@ def path_sampling(A, T, m):
             adjacency_dict[path[0]] = [path[1]]
         adjacency_dict[path[0]].append(path[1])
 
-    for i in range(1, m+1):
+    for i in range(1, m_+1):
         # random select a edge e(u,v) from origin graph G
+        # the selected edge is from u to v
         u = random.sample(list(adjacency_dict.keys()), 1)[0]
         v = random.sample(adjacency_dict[u], 1)[0]
 
@@ -570,19 +583,23 @@ def path_sampling(A, T, m):
         u0, u_path = walk(adjacency_dict, u, k-1)
         ur, v_path = walk(adjacency_dict, v, r-k)
 
-        u_path.reverse()
-        p = u_path + v_path
-        r = len(p) - 1
+        # u_path.reverse()
+        # p = u_path + v_path
+        p = [(u_path[i], u_path[i+1]) for i in range(len(u_path)-1)] + [(u, v)] + [(v_path[i], v_path[i+1]) for i in range(len(v_path)-1)]
+        # print(p, u_path, v_path, u, v)
+        r = len(p)
 
         Zp = 0
-
-        for path_node_index in range(len(p)-1):
-            path_node_pairs = (p[path_node_index], p[path_node_index+1])
+        ss = 0
+        for path_node_index in range(len(p)):
+            # path_node_pairs = (p[path_node_index], p[path_node_index+1])
+            path_node_pairs = p[path_node_index]
             path_weight = A[path_node_pairs]
+            ss+=1
             # calculate Zp
             Zp += 1/path_weight
 
-        sparse_weight = (2*r*i)/m*Zp
+        sparse_weight = (2*r*m)/m_*Zp
         A_sparse[u0, ur] = sparse_weight
     # collect garbage
     gc.collect()

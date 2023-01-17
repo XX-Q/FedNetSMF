@@ -66,8 +66,12 @@ class MaskingServer():
         return p, q
 
 
-    def generate_random_matrix(self, n, d):
+    def generate_random_matrix(self, n, d, block_size):
         self.O = random_matrix_unblock(n, d)
-        self.O = block_matrix_splitter(self.O, "O", diag=False)
+        self.O = block_matrix_splitter(self.O, "O", diag=False, block_size=block_size)
+
+    def generate_random_matrix_test(self, n, d, block_size):
+        self.O = [['matrices/O_0_0_100.npz'], ['matrices/O_1_0_100.npz'], ['matrices/O_2_0_100.npz'], ['matrices/O_3_0_100.npz'], ['matrices/O_4_0_100.npz'], ['matrices/O_5_0_100.npz'], ['matrices/O_6_0_100.npz'], ['matrices/O_7_0_100.npz'], ['matrices/O_8_0_100.npz'], ['matrices/O_9_0_100.npz']]
+
 
 

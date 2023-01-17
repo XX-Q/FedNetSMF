@@ -46,13 +46,16 @@ class EmbeddingServer:
             # TODO change the method into secureAgg
 
     def calculate_qr_result(self, block_size):
-        self.Q = qr_block_matrix(self.M, block_size=block_size, name="Q")
-        self.Q = block_matrix_splitter(self.Q, name="Q", block_size=block_size, diag=False)
+        self.Q = qr_block_matrix(self.M_sum, block_size=block_size, name="Q")
+        M_ = show_block_matrix(self.M_sum, block_size)
+        Q_ = show_block_matrix(self.Q, block_size)
+        print("_")
 
     def calculate_B_sum(self, Bs, block_size):
         self.B_sum = Bs[0]
         for M_index in range(1, len(Bs)):
             self.B_sum = block_add(self.B_sum, Bs[M_index], block_size=block_size, name="B_sum")
+
             # TODO change the method into secureAgg
 
     def calculate_svd_result(self, block_size):
@@ -64,7 +67,7 @@ class EmbeddingServer:
         s = block_matrix_splitter(s, "s", block_size=block_size, diag=True)
         U = block_matrix_splitter(U, "U", block_size=block_size, diag=False)
         U = block_dot(self.Q, U, block_size, name="U")
-        embedding_result = diag_block_dot(U, s, "embedding_result")
+        embedding_result = diag_block_dot(U, s, "embedding_result", dot_side="right", block_size=block_size)
         embedding_result = show_block_matrix(embedding_result, block_size=block_size)
         return embedding_result
 
